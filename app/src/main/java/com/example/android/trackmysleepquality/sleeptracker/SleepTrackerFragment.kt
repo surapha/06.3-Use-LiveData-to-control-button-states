@@ -30,6 +30,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -63,9 +64,18 @@ class SleepTrackerFragment : Fragment() {
                 ViewModelProviders.of(
                         this, viewModelFactory).get(SleepTrackerViewModel::class.java)
 
-        return binding.root
+
 
         binding.setLifecycleOwner(this)
+
+        if (it == true) { // Observed state is true.
+            Snackbar.make(
+                    activity!!.findViewById(android.R.id.content),
+                    getString(R.string.cleared_message),
+                    Snackbar.LENGTH_SHORT // How long to display the message.
+            ).show()
+            sleepTrackerViewModel.doneShowingSnackbar()
+        }
 
         sleepTrackerViewModel.navigateToSleepQuality.observe(this, Observer {night ->
             night?.let {
@@ -76,28 +86,8 @@ class SleepTrackerFragment : Fragment() {
             }
         })
 
+        return binding.root
 
     }
-    private val _navigateToSleepTracker = MutableLiveData<Boolean?>()
 
-    val navigateToSleepTracker: LiveData<Boolean?>
-        get() = _navigateToSleepTracker
-
-    fun doneNavigating() {
-        _navigateToSleepTracker.value = null
-    }
-    fun onSetSleepQuality(quality: Int) {
-        uiScope.launch {
-            // IO is a thread pool for running operations that access the disk, such as
-            // our Room database.
-            withContext(Dispatchers.IO) {
-                val tonight = database.get(sleepNightKey) ?: return@withContext
-                tonight.sleepQuality = quality
-                database.update(tonight)
-            }
-
-            // Setting this state variable to true will alert the observer and trigger navigation.
-            _navigateToSleepTracker.value = true
-        }
-    }
 }
