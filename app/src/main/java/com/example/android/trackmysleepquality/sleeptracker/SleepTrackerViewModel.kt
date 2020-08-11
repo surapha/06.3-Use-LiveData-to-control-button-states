@@ -34,6 +34,11 @@ class SleepTrackerViewModelFactory(
             return SleepTrackerViewModel(dataSource, application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
+
+        binding.sleepTrackerViewModel = sleepTrackerViewModel
+
     }
+
+
 }
 
