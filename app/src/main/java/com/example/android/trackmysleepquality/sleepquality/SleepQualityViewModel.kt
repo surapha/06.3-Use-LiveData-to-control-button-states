@@ -25,7 +25,9 @@ import kotlinx.coroutines.Job
 class SleepQualityViewModel(
         private val sleepNightKey: Long = 0L,
         val database: SleepDatabaseDao) : ViewModel() {
+
     private val viewModelJob = Job()
+
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     override fun onCleared() {
