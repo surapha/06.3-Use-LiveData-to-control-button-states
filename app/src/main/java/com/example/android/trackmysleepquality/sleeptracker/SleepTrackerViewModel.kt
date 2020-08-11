@@ -28,7 +28,7 @@ import kotlinx.coroutines.*
 /**
  * ViewModel for SleepTrackerFragment.
  */
-class SleepTrackerViewModelFactory(
+class SleepTrackerViewModel(
         private val dataSource: SleepDatabaseDao,
         private val application: Application) : ViewModelProvider.Factory {
     @Suppress("unchecked_cast")
@@ -43,14 +43,17 @@ class SleepTrackerViewModelFactory(
     }
 
     private var viewModelJob = Job()
+    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+    private val nightsString = Transformations.map(nights) { nights ->
+        formatNights(nights, application.resources)
+    }
+
+    private var tonight = MutableLiveData<SleepNight?>()
+
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
     }
-
-    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
-    private var tonight = MutableLiveData<SleepNight?>()
-
 
     init {
         initializeTonight()
@@ -76,6 +79,8 @@ class SleepTrackerViewModelFactory(
             val oldNight = tonight.value ?: return@launch
             oldNight.endTimeMilli = System.currentTimeMillis()
             update(oldNight)
+
+            _navigateToSleepQuality.value = oldNight
         }
     }
     private suspend fun update(night: SleepNight) {
@@ -95,9 +100,19 @@ class SleepTrackerViewModelFactory(
             database.clear()
         }
     }
-    private val nightsString = Transformations.map(nights) { nights ->
-        formatNights(nights, application.resources)
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+
+    val navigateToSleepQuality: LiveData<SleepNight>
+        get() = _navigateToSleepQuality
+
+    fun doneNavigating() {
+        _navigateToSleepQuality.value = null
+
+
+
+
     }
+
 
 
 
