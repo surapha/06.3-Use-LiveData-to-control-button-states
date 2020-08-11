@@ -83,17 +83,16 @@ class SleepTrackerViewModelFactory(
             database.update(night)
         }
     }
-    fun someWorkNeedsToBeDone {
+    fun onClear() {
         uiScope.launch {
-
-            suspendFunction()
-
+            clear()
+            tonight.value = null
         }
     }
 
-    suspend fun suspendFunction() {
+    suspend fun clear() {
         withContext(Dispatchers.IO) {
-            longrunningWork()
+            database.clear()
         }
     }
     private val nightsString = Transformations.map(nights) { nights ->
